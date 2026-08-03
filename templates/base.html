@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-accent="{{ global_user_settings.accent_color|default:'teal' }}" data-card-theme="{{ global_user_settings.card_theme|default:'classic' }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Daybook{% endblock %} — Daily Task Manager</title>
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% block extra_css %}{% endblock %}
+<script>
+  /* Apply saved theme before paint to avoid a flash of the wrong theme. */
+  (function () {
+    var saved = localStorage.getItem('daybook-theme');
+    if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  })();
+</script>
+</head>
+<body class="site-body">
+
+{% if messages %}
+<div class="global-messages">
+  {% for message in messages %}
+  <div class="global-message global-message--{{ message.tags|default:'info' }}">{{ message }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="app site-main">
+  {% block content %}{% endblock %}
+</div>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <div class="site-footer-brand">
+      <span class="brand-mark">◐</span> Daybook
+    </div>
+    <nav class="site-footer-links">
+      {% if request.user.is_authenticated %}
+      <a href="{% url 'index' %}">Tasks</a>
+      <a href="{% url 'habit_list' %}">Habits</a>
+      <a href="{% url 'stats_overview' %}">Stats</a>
+      <a href="{% url 'journal_list' %}">Journal</a>
+      <a href="{% url 'profile' %}">Profile</a>
+      <a href="{% url 'logout' %}">Sign out</a>
+      {% else %}
+      <a href="{% url 'login' %}">Sign in</a>
+      <a href="{% url 'register' %}">Create account</a>
+      {% endif %}
+    </nav>
+    <div class="site-footer-copy">&copy; {% now "Y" %} Daybook &middot; a personal task &amp; habit tracker</div>
+  </div>
+</footer>
+
+<button id="themeToggleBtn" class="theme-toggle" title="Toggle dark mode" aria-label="Toggle dark mode">
+  <span class="theme-toggle-icon-dark">{% include "icons.html" with icon="moon" size=16 %}</span>
+  <span class="theme-toggle-icon-light">{% include "icons.html" with icon="sun" size=16 %}</span>
+</button>
+
+<script>
+  document.getElementById('themeToggleBtn').addEventListener('click', function () {
+    var root = document.documentElement;
+    var isDark = root.getAttribute('data-theme') === 'dark';
+    if (isDark) {
+      root.removeAttribute('data-theme');
+      localStorage.setItem('daybook-theme', 'light');
+    } else {
+      root.setAttribute('data-theme', 'dark');
+      localStorage.setItem('daybook-theme', 'dark');
+    }
+  });
+
+  // Auto-dismiss flash messages after a few seconds.
+  document.querySelectorAll('.global-message').forEach(function (el, i) {
+    setTimeout(function () { el.style.display = 'none'; }, 6000 + i * 300);
+  });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

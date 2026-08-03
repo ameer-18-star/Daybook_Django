@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Create account{% endblock %}
+
+{% block extra_css %}
+<style>
+.auth-wrap { max-width: 380px; margin: 60px auto; }
+.auth-card { padding: 28px; }
+.auth-card h1 { font-family: var(--font-display); font-size: 22px; margin: 0 0 4px; }
+.auth-card .sub { color: var(--ink-faint); font-size: 13px; margin-bottom: 20px; }
+.auth-field { margin-bottom: 14px; }
+.auth-field label { display: block; font-size: 12px; color: var(--ink-soft); margin-bottom: 5px; }
+.auth-field input {
+  width: 100%; font-size: 14px; padding: 9px 10px; border-radius: var(--radius-sm);
+  border: 1px solid var(--line); background: var(--paper); font-family: inherit;
+}
+.auth-field input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.auth-field .helptext { font-size: 11px; color: var(--ink-faint); margin-top: 4px; display: block; }
+.auth-errors, .field-errors { background: var(--priority-high-bg); color: var(--priority-high); border-radius: 8px; padding: 8px 10px; font-size: 12px; margin-top: 6px; }
+.auth-footer { text-align: center; margin-top: 16px; font-size: 13px; color: var(--ink-faint); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="card auth-card">
+    <div class="brand" style="margin-bottom:18px;">
+      <span class="brand-mark">◐</span>
+      <div><h1>Daybook</h1><p class="sub">Create your account</p></div>
+    </div>
+
+    {% if form.non_field_errors %}
+    <div class="auth-errors">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="auth-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+        {% if field.errors %}<div class="field-errors">{{ field.errors }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn btn--primary" style="width:100%;">Create account</button>
+    </form>
+
+    <p class="auth-footer">Already have an account? <a href="{% url 'login' %}" class="footer-link">Sign in</a></p>
+  </div>
+</div>
+{% endblock %}

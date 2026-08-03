@@ -1,0 +1,961 @@
+/* =========================================================
+   Daybook — stylesheet
+   Design language: a paper ledger. Warm off-white paper,
+   deep ink text, a single deep-teal accent for "done", and
+   an ochre accent reserved for high-priority items only.
+   Numbers/dates render in a mono face like stamped figures.
+   ========================================================= */
+
+:root {
+  /* --- palette --- */
+  --paper:        #F5F6F1;
+  --paper-raised: #FFFFFF;
+  --ink:          #1B2420;
+  --ink-soft:     #4B5750;
+  --ink-faint:    #8A9289;
+  --line:         #DEE1D8;
+  --line-soft:    #EAECE5;
+
+  --accent:       #2F6F62;   /* deep teal — completion / primary */
+  --accent-soft:  #E4EEEA;
+  --accent-strong:#1F5347;
+
+  --priority-high:   #C1502E; /* ochre-clay, used sparingly */
+  --priority-high-bg:#FBECE6;
+  --priority-med:    #B7871F;
+  --priority-med-bg: #FBF2DE;
+  --priority-low:    #4B7A8F;
+  --priority-low-bg: #E7F0F3;
+
+  --danger:       #B5533C;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --shadow-card: 0 1px 2px rgba(27,36,32,0.04), 0 8px 24px -12px rgba(27,36,32,0.12);
+  --shadow-pop:  0 12px 32px -8px rgba(27,36,32,0.22);
+
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+@font-face {
+  font-family: "Fraunces";
+  src: local("Fraunces");
+  font-display: swap;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(27,36,32,0.045) 1px, transparent 0);
+  background-size: 22px 22px;
+}
+
+::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+button, input, select {
+  font-family: inherit;
+  color: inherit;
+}
+
+.hidden { display: none !important; }
+
+/* =========== Layout shell =========== */
+
+.app {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.app-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  font-size: 30px;
+  line-height: 1;
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.brand h1 {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.tagline {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--ink-faint);
+  font-style: italic;
+  font-family: var(--font-display);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.streak-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow-card);
+}
+.streak-flame { font-size: 14px; }
+.streak-label { color: var(--ink-faint); font-weight: 500; }
+
+.today-date {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink-soft);
+  letter-spacing: 0.02em;
+}
+
+/* =========== Import banner =========== */
+
+.import-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--priority-med-bg);
+  border: 1px solid var(--priority-med);
+  color: var(--priority-med);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* =========== Main layout =========== */
+
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 800px) {
+  .layout { grid-template-columns: 1fr; }
+}
+
+.card {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 22px;
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0 0 18px;
+}
+
+/* =========== Dashboard =========== */
+
+.dashboard {
+  position: sticky;
+  top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.progress-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto;
+}
+
+.progress-ring { transform: rotate(-90deg); }
+
+.progress-ring__track {
+  fill: none;
+  stroke: var(--line-soft);
+  stroke-width: 12;
+}
+
+.progress-ring__bar {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 12;
+  stroke-linecap: round;
+  stroke-dasharray: 377;
+  stroke-dashoffset: 377;
+  transition: stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1), stroke 0.3s;
+}
+
+.progress-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-pct {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 600;
+}
+.progress-sub {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.stat-box {
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-box--accent {
+  background: var(--priority-high-bg);
+  border-color: transparent;
+}
+.stat-box--accent .stat-num { color: var(--priority-high); }
+
+.stat-num {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 600;
+}
+.stat-label {
+  font-size: 11px;
+  color: var(--ink-faint);
+}
+
+.tools {
+  border-top: 1px dashed var(--line);
+  padding-top: 16px;
+}
+.tools-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  margin: 0 0 10px;
+}
+.tools-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.tools-hint {
+  font-size: 11px;
+  color: var(--ink-faint);
+  line-height: 1.5;
+  margin: 12px 0 0;
+}
+.tools-hint code {
+  background: var(--line-soft);
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+
+/* =========== Buttons / inputs =========== */
+
+.btn {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.1s, background 0.15s, border-color 0.15s;
+  text-align: center;
+}
+.btn:active { transform: scale(0.97); }
+
+.btn--primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn--primary:hover { background: var(--accent-strong); }
+
+.btn--ghost {
+  background: var(--paper);
+  border-color: var(--line);
+  color: var(--ink);
+}
+.btn--ghost:hover { border-color: var(--accent); color: var(--accent-strong); }
+
+.file-btn { display: flex; align-items: center; justify-content: center; }
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--ink-faint);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+.link-btn:hover { color: var(--accent-strong); }
+
+.select, .task-text-input {
+  font-size: 13px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+.task-text-input {
+  width: 100%;
+  font-size: 15px;
+}
+.select:focus, .task-text-input:focus, .btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* =========== Add task form =========== */
+
+.add-task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.add-task-row {
+  display: flex;
+  gap: 8px;
+}
+.add-task-row .select { flex: 1; }
+.add-task-row .btn { flex: 1.4; }
+
+/* =========== Filters =========== */
+
+.filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.filter-group { display: flex; gap: 6px; }
+
+.chip {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.chip.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* =========== Task list =========== */
+
+.task-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  transition: border-color 0.15s;
+}
+.task-item:hover { border-color: var(--ink-faint); }
+
+.task-check {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border: 2px solid var(--line);
+  border-radius: 6px;
+  margin-top: 2px;
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+.task-check:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.task-check:checked::after {
+  content: "✓";
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.task-body { flex: 1; min-width: 0; }
+
+.task-text {
+  font-size: 14.5px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+.task-item.is-completed .task-text {
+  text-decoration: line-through;
+  color: var(--ink-faint);
+}
+
+.task-meta {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.tag--category {
+  background: var(--line-soft);
+  color: var(--ink-soft);
+}
+.tag--priority-high { background: var(--priority-high-bg); color: var(--priority-high); }
+.tag--priority-medium { background: var(--priority-med-bg); color: var(--priority-med); }
+.tag--priority-low { background: var(--priority-low-bg); color: var(--priority-low); }
+
+.task-actions {
+  display: flex;
+  gap: 4px;
+}
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  color: var(--ink-faint);
+}
+.icon-btn:hover { background: var(--line-soft); color: var(--ink); }
+.icon-btn--danger:hover { background: var(--priority-high-bg); color: var(--danger); }
+
+.empty-state {
+  text-align: center;
+  color: var(--ink-faint);
+  font-size: 13px;
+  padding: 40px 0;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-md);
+}
+
+/* =========== Edit dialog =========== */
+
+.edit-dialog {
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  box-shadow: var(--shadow-pop);
+  width: min(420px, 90vw);
+}
+.edit-dialog::backdrop { background: rgba(27,36,32,0.35); }
+.edit-dialog h3 {
+  font-family: var(--font-display);
+  margin: 0 0 14px;
+}
+#editForm { display: flex; flex-direction: column; gap: 10px; }
+.edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* =========== Footer =========== */
+
+.app-footer {
+  margin-top: 32px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--ink-faint);
+}
+
+/* =========== Responsive =========== */
+
+@media (max-width: 480px) {
+  .app { padding: 20px 14px 48px; }
+  .stats-grid, .tools-grid { grid-template-columns: 1fr 1fr; }
+  .add-task-row { flex-wrap: wrap; }
+  .add-task-row .select, .add-task-row .btn { flex: 1 1 100%; }
+}
+
+/* =========== Nav links (added for Django version) =========== */
+.header-nav {
+  display: flex;
+  gap: 8px;
+}
+.nav-link {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+.nav-link:hover {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+.footer-link {
+  color: var(--ink-faint);
+  text-decoration: underline;
+}
+.footer-link:hover {
+  color: var(--accent-strong);
+}
+
+/* =========== Icons (replacing emojis) =========== */
+.icon {
+  display: inline-block;
+  vertical-align: -2px;
+  flex-shrink: 0;
+}
+.btn, .nav-link, .link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.streak-flame .icon { color: var(--priority-high); vertical-align: -3px; }
+.icon-btn { display: inline-flex; align-items: center; justify-content: center; }
+
+/* =========================================================
+   Dark mode — toggled via [data-theme="dark"] on <html>
+   ========================================================= */
+:root[data-theme="dark"] {
+  --paper:        #171B18;
+  --paper-raised: #20241F;
+  --ink:          #EDEFE9;
+  --ink-soft:     #B7BEB4;
+  --ink-faint:    #7C8880;
+  --line:         #2E332E;
+  --line-soft:    #262B25;
+
+  --accent:       #4E9C87;
+  --accent-soft:  #1E3730;
+  --accent-strong:#7BC9AE;
+
+  --priority-high:   #E28361;
+  --priority-high-bg:#3A241D;
+  --priority-med:    #E0B457;
+  --priority-med-bg: #3A2F17;
+  --priority-low:    #7FB2C7;
+  --priority-low-bg: #1B2B31;
+
+  --danger: #E0836A;
+}
+:root[data-theme="dark"] body {
+  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.035) 1px, transparent 0);
+}
+
+/* =========== Theme toggle button =========== */
+.theme-toggle {
+  position: fixed; bottom: 20px; right: 20px; z-index: 40;
+  width: 44px; height: 44px; border-radius: 999px;
+  background: var(--paper-raised); border: 1px solid var(--line);
+  box-shadow: var(--shadow-pop); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-soft);
+}
+.theme-toggle:hover { color: var(--accent-strong); border-color: var(--accent); }
+.theme-toggle-icon-light { display: none; }
+:root[data-theme="dark"] .theme-toggle-icon-dark { display: none; }
+:root[data-theme="dark"] .theme-toggle-icon-light { display: inline-flex; }
+
+/* =========== Search + tag filter bar =========== */
+.search-bar {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+  background: var(--paper-raised); border: 1px solid var(--line);
+  border-radius: var(--radius-md); padding: 8px 12px;
+}
+.search-bar .icon { color: var(--ink-faint); }
+.search-bar input {
+  border: none; outline: none; background: transparent; flex: 1;
+  font-size: 13.5px; color: var(--ink); font-family: inherit;
+}
+.tag-filter-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.tag-chip {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600;
+  padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--paper-raised); color: var(--ink-soft); text-decoration: none;
+  cursor: pointer;
+}
+.tag-chip.is-active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tag-chip .icon { width: 11px; height: 11px; }
+
+/* tag colors on task items */
+.tag--color-teal   { background: var(--accent-soft); color: var(--accent-strong); }
+.tag--color-amber   { background: var(--priority-med-bg); color: var(--priority-med); }
+.tag--color-clay    { background: var(--priority-high-bg); color: var(--priority-high); }
+.tag--color-blue    { background: var(--priority-low-bg); color: var(--priority-low); }
+.tag--color-purple  { background: #EFE6FB; color: #6B3FA0; }
+:root[data-theme="dark"] .tag--color-purple { background: #2A2036; color: #C6A8ED; }
+.tag--color-slate   { background: var(--line-soft); color: var(--ink-soft); }
+
+/* =========== Due time / overdue badges =========== */
+.due-badge {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700;
+  padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.03em;
+}
+.due-badge--soon { background: var(--priority-med-bg); color: var(--priority-med); }
+.due-badge--overdue { background: var(--priority-high-bg); color: var(--priority-high); }
+.due-badge--time { background: var(--line-soft); color: var(--ink-soft); text-transform: none; letter-spacing: 0; }
+.due-badge .icon { width: 10px; height: 10px; }
+
+/* =========== Subtasks =========== */
+.subtask-list { list-style: none; margin: 10px 0 0 32px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.subtask-item {
+  display: flex; align-items: center; gap: 8px; font-size: 13px;
+  padding: 6px 10px; background: var(--paper); border: 1px solid var(--line-soft); border-radius: 8px;
+}
+.subtask-item.is-completed .subtask-text { text-decoration: line-through; color: var(--ink-faint); }
+.subtask-check { width: 15px; height: 15px; }
+.subtask-text { flex: 1; }
+.subtask-delete { background: none; border: none; color: var(--ink-faint); cursor: pointer; display: flex; }
+.subtask-delete:hover { color: var(--danger); }
+.subtask-toggle-btn {
+  background: none; border: none; color: var(--ink-faint); font-size: 11.5px; cursor: pointer;
+  display: flex; align-items: center; gap: 4px; margin: 6px 0 0 32px; padding: 0;
+}
+.subtask-toggle-btn:hover { color: var(--accent-strong); }
+.add-subtask-row { display: flex; gap: 6px; margin: 6px 0 0 32px; }
+.add-subtask-row input {
+  flex: 1; font-size: 12.5px; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--line);
+  background: var(--paper); color: var(--ink);
+}
+.add-subtask-row button {
+  background: var(--accent-soft); color: var(--accent-strong); border: none; border-radius: 6px;
+  padding: 0 10px; cursor: pointer; display: flex; align-items: center;
+}
+
+/* =========== Notes field in edit dialog =========== */
+.notes-textarea {
+  width: 100%; min-height: 70px; font-size: 13px; font-family: inherit; padding: 9px 10px;
+  border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+  resize: vertical;
+}
+
+/* =========== Habits page =========== */
+.habit-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px;
+  background: var(--paper-raised);
+}
+.habit-row.is-inactive { opacity: 0.55; }
+.habit-info { display: flex; flex-direction: column; gap: 3px; }
+.habit-recurrence { font-size: 11.5px; color: var(--ink-faint); }
+.habit-actions { display: flex; gap: 6px; }
+
+
+/* =========================================================
+   Site-wide footer & global flash messages (Phase 7)
+   ========================================================= */
+.site-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.site-main {
+  flex: 1;
+}
+
+.site-footer {
+  border-top: 1px solid var(--line);
+  background: var(--paper-raised);
+  margin-top: 40px;
+}
+.site-footer-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.site-footer-brand {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.site-footer-brand .brand-mark {
+  color: var(--accent);
+}
+.site-footer-links {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.site-footer-links a {
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  text-decoration: none;
+}
+.site-footer-links a:hover {
+  color: var(--accent-strong);
+  text-decoration: underline;
+}
+.site-footer-copy {
+  font-size: 11.5px;
+  color: var(--ink-faint);
+}
+
+.global-messages {
+  max-width: 640px;
+  margin: 16px auto 0;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.global-message {
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  border: 1px solid transparent;
+}
+.global-message--success { background: var(--accent-soft); color: var(--accent-strong); border-color: var(--accent); }
+.global-message--error { background: var(--priority-high-bg); color: var(--priority-high); border-color: var(--priority-high); }
+.global-message--warning { background: var(--priority-med-bg); color: var(--priority-med); border-color: var(--priority-med); }
+.global-message--info, .global-message--debug { background: var(--line-soft); color: var(--ink-soft); border-color: var(--line); }
+
+/* =========================================================
+   Phase 8 — Accent color presets
+   Same mechanism as the dark/light toggle: swap CSS custom
+   properties at :root, and every existing --accent/--accent-soft/
+   --accent-strong usage across the whole app follows automatically.
+   Teal is the default and already defined above (both light and
+   dark variants), so it needs no override rule here.
+   ========================================================= */
+:root[data-accent="blue"]   { --accent:#2F5F8F; --accent-soft:#E3ECF5; --accent-strong:#1F3F63; }
+:root[data-accent="purple"] { --accent:#6B3FA0; --accent-soft:#EFE6FB; --accent-strong:#4A2570; }
+:root[data-accent="rose"]   { --accent:#B24A72; --accent-soft:#F9E8EF; --accent-strong:#7D2F4E; }
+:root[data-accent="amber"]  { --accent:#B7871F; --accent-soft:#FBF2DE; --accent-strong:#8A6516; }
+:root[data-accent="green"]  { --accent:#3F8F5F; --accent-soft:#E6F5EC; --accent-strong:#276B41; }
+:root[data-accent="slate"]  { --accent:#4B5563; --accent-soft:#E7E9EC; --accent-strong:#333B45; }
+:root[data-accent="clay"]   { --accent:#C1502E; --accent-soft:#FBECE6; --accent-strong:#8F3A1E; }
+
+:root[data-theme="dark"][data-accent="blue"]   { --accent:#6FA8D8; --accent-soft:#1B2A3A; --accent-strong:#A9CDEE; }
+:root[data-theme="dark"][data-accent="purple"] { --accent:#B48EE0; --accent-soft:#2A2036; --accent-strong:#D2B8F2; }
+:root[data-theme="dark"][data-accent="rose"]   { --accent:#E28FB0; --accent-soft:#3A2028; --accent-strong:#F0B8CB; }
+:root[data-theme="dark"][data-accent="amber"]  { --accent:#E0B457; --accent-soft:#3A2F17; --accent-strong:#F0CE8C; }
+:root[data-theme="dark"][data-accent="green"]  { --accent:#6FC48F; --accent-soft:#1C3325; --accent-strong:#A6E0BE; }
+:root[data-theme="dark"][data-accent="slate"]  { --accent:#9AA5B1; --accent-soft:#2A2F36; --accent-strong:#C7CED6; }
+:root[data-theme="dark"][data-accent="clay"]   { --accent:#E28361; --accent-soft:#3A241D; --accent-strong:#F0B399; }
+
+/* =========================================================
+   Phase 8 — Card themes
+   "classic" is the current default look everywhere already built,
+   so it needs no rules. The other two are applied here as one
+   consolidated override list covering every card-like container
+   class across the whole app, rather than editing ~15 templates'
+   local <style> blocks individually. !important is deliberate:
+   these page-local styles were declared after the global
+   stylesheet and would otherwise win the cascade.
+   NOTE for future work: any new "card" class added in a later
+   phase needs to be added to both selector lists below to stay
+   themeable — it won't pick this up automatically.
+   ========================================================= */
+:root[data-card-theme="minimal"] .card,
+:root[data-card-theme="minimal"] .stat-box,
+:root[data-card-theme="minimal"] .stat-card,
+:root[data-card-theme="minimal"] .report-section,
+:root[data-card-theme="minimal"] .stats-section,
+:root[data-card-theme="minimal"] .habit-card,
+:root[data-card-theme="minimal"] .month-card,
+:root[data-card-theme="minimal"] .day-section,
+:root[data-card-theme="minimal"] .journal-entry-card,
+:root[data-card-theme="minimal"] .review-card,
+:root[data-card-theme="minimal"] .profile-section,
+:root[data-card-theme="minimal"] .backup-card,
+:root[data-card-theme="minimal"] .badge-card,
+:root[data-card-theme="minimal"] .anytime-row,
+:root[data-card-theme="minimal"] .timeline-settings-panel,
+:root[data-card-theme="minimal"] .habit-form-wrap .card,
+:root[data-card-theme="minimal"] .auth-card {
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  border-width: 1px !important;
+}
+
+:root[data-card-theme="bold"] .card,
+:root[data-card-theme="bold"] .stat-box,
+:root[data-card-theme="bold"] .stat-card,
+:root[data-card-theme="bold"] .report-section,
+:root[data-card-theme="bold"] .stats-section,
+:root[data-card-theme="bold"] .habit-card,
+:root[data-card-theme="bold"] .month-card,
+:root[data-card-theme="bold"] .day-section,
+:root[data-card-theme="bold"] .journal-entry-card,
+:root[data-card-theme="bold"] .review-card,
+:root[data-card-theme="bold"] .profile-section,
+:root[data-card-theme="bold"] .backup-card,
+:root[data-card-theme="bold"] .badge-card,
+:root[data-card-theme="bold"] .anytime-row,
+:root[data-card-theme="bold"] .timeline-settings-panel,
+:root[data-card-theme="bold"] .habit-form-wrap .card,
+:root[data-card-theme="bold"] .auth-card {
+  border-radius: 18px !important;
+  box-shadow: 0 8px 22px -8px rgba(0,0,0,0.22) !important;
+  border-width: 2px !important;
+  border-color: var(--accent) !important;
+}
+
+/* =========================================================
+   Phase 8 — Avatar in nav
+   ========================================================= */
+.nav-avatar {
+  width: 20px; height: 20px; border-radius: 50%; object-fit: cover;
+  vertical-align: -5px; margin-right: 2px;
+}
+
+/* =========================================================
+   Shared habit card styles (Phase 9)
+   Moved here from habits/list.html's local styles so the same
+   markup/CSS can be reused on the Tasks page's "Today's Habits"
+   section, not just the full Habits management page. Anything
+   specific to managing habits (drag reorder, bulk select, section
+   headers, archived list) stays local to habits/list.html.
+   ========================================================= */
+.habit-card {
+  background: var(--paper-raised); border: 1px solid var(--line); border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px;
+}
+.habit-card.is-paused { opacity: 0.6; }
+.habit-card-top { display: flex; align-items: flex-start; gap: 12px; }
+.habit-card-main { flex: 1; min-width: 0; }
+.habit-card-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.habit-card-title { font-size: 14.5px; font-weight: 600; }
+.habit-meta-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+.habit-meta-badge {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600;
+  padding: 2px 8px; border-radius: 999px; background: var(--line-soft); color: var(--ink-soft);
+}
+.habit-streak-badge { background: var(--priority-med-bg); color: var(--priority-med); }
+.habit-streak-badge.is-zero { background: var(--line-soft); color: var(--ink-faint); }
+.habit-paused-badge { background: var(--priority-high-bg); color: var(--priority-high); }
+
+.habit-actions { display: flex; gap: 2px; flex-shrink: 0; }
+
+/* Yes/No */
+.habit-yesno-toggle {
+  width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--line);
+  background: var(--paper); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: transparent; flex-shrink: 0;
+}
+.habit-yesno-toggle.is-completed { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* Numeric */
+.habit-numeric-row { display: flex; align-items: center; gap: 8px; }
+.habit-numeric-input {
+  width: 90px; font-size: 13px; padding: 7px 9px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--paper); color: var(--ink);
+}
+.habit-numeric-target { font-size: 12px; color: var(--ink-faint); }
+.habit-numeric-bar-track { flex: 1; height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; min-width: 60px; }
+.habit-numeric-bar-fill { height: 100%; background: var(--accent); border-radius: 999px; }
+
+/* Checklist */
+.habit-checklist { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.habit-checklist-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.habit-checklist-item.is-checked .checklist-item-text { text-decoration: line-through; color: var(--ink-faint); }
+.habit-checklist-progress { font-size: 11.5px; color: var(--ink-faint); }
+
+/* Grace day button */
+.grace-day-btn {
+  font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+  border: 1px dashed var(--priority-med); color: var(--priority-med); background: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.grace-day-btn:hover { background: var(--priority-med-bg); }
+
+/* Today's Habits section on the Tasks page */
+.today-habits-card { margin-top: 16px; }
+.today-habits-card .card-title { display: flex; align-items: center; justify-content: space-between; }
+.today-habits-card .manage-link { font-size: 12px; font-weight: 500; color: var(--ink-faint); text-decoration: none; }
+.today-habits-card .manage-link:hover { color: var(--accent-strong); text-decoration: underline; }
+.today-habits-section-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint);
+  font-weight: 700; margin: 14px 0 8px;
+}
+.today-habits-section-label:first-child { margin-top: 0; }

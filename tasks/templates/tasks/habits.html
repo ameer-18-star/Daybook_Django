@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Recurring Tasks{% endblock %}
+
+{% block extra_css %}
+<style>
+.habits-wrap { max-width: 680px; margin: 0 auto; }
+.habits-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.habits-header h1 { font-family: var(--font-display); font-size: 24px; margin: 0 0 4px; }
+.habits-header .sub { color: var(--ink-faint); font-size: 13px; }
+.new-habit-form { margin-bottom: 24px; }
+.new-habit-form .row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.new-habit-form .row > * { flex: 1; min-width: 110px; }
+.field-errors { background: var(--priority-high-bg); color: var(--priority-high); border-radius: 8px; padding: 6px 10px; font-size: 12px; margin-top: 4px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="habits-wrap">
+  <div class="habits-header">
+    <div>
+      <h1>{% include "icons.html" with icon="repeat" size=20 %} Recurring Tasks</h1>
+      <p class="sub">Recurring tasks that get added to your list automatically each day they're due.</p>
+    </div>
+    <a href="{% url 'index' %}" class="btn btn--ghost">{% include "icons.html" with icon="arrow-left" size=14 %} Daybook</a>
+  </div>
+
+  <form method="post" class="card new-habit-form">
+    {% csrf_token %}
+    {{ form.text }}
+    {% if form.text.errors %}<div class="field-errors">{{ form.text.errors }}</div>{% endif %}
+    <div class="row" style="margin-top:10px;">
+      {{ form.category }}
+      {{ form.priority }}
+      {{ form.recurrence_type }}
+    </div>
+    <div class="row">
+      {{ form.days_of_week }}
+    </div>
+    {% if form.days_of_week.errors %}<div class="field-errors">{{ form.days_of_week.errors }}</div>{% endif %}
+    <button type="submit" class="btn btn--primary">{% include "icons.html" with icon="plus" size=14 %} Add habit</button>
+  </form>
+
+  {% for tpl in templates %}
+  <div class="habit-row{% if not tpl.active %} is-inactive{% endif %}">
+    <div class="habit-info">
+      <strong>{{ tpl.text }}</strong>
+      <span class="habit-recurrence">
+        {{ tpl.get_recurrence_type_display }}{% if tpl.recurrence_type == 'custom' %} ({{ tpl.days_of_week }}){% endif %}
+        &middot; {{ tpl.category }} / {{ tpl.priority }}
+      </span>
+    </div>
+    <div class="habit-actions">
+      <form method="post" action="{% url 'recurring_task_toggle_active' tpl.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn--ghost">{% if tpl.active %}Pause{% else %}Resume{% endif %}</button>
+      </form>
+      <form method="post" action="{% url 'recurring_task_delete' tpl.id %}" onsubmit="return confirm('Delete this habit?');">
+        {% csrf_token %}
+        <button type="submit" class="icon-btn icon-btn--danger" title="Delete habit">{% include "icons.html" with icon="trash" size=14 %}</button>
+      </form>
+    </div>
+  </div>
+  {% empty %}
+  <p class="empty-state">No habits yet — add one above and it'll show up on today's list automatically.</p>
+  {% endfor %}
+</div>
+{% endblock %}
